@@ -1,12 +1,19 @@
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.text.NumberFormat;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Stream;
 
-public class Basket implements Serializable {
+public class Basket {
     private final Product[] goods;
     private double totalValue = 0;
 
     public Basket(Product[] goods) {
-        this.goods = goods;
+        this.goods = goods.clone();
     }
 
     public void addToCart(int productNum, int amount) {
@@ -46,16 +53,33 @@ public class Basket implements Serializable {
         System.out.printf("ИТОГО Товаров в корзине на %10.2f\n\n", totalValue);
     }
 
-    public void saveBin(File file) throws IOException {
-        var fos = new FileOutputStream(file);
-        var oos = new ObjectOutputStream(fos);
-        oos.writeObject(this);
-        oos.close();
+    public void saveTxt(File textFile) throws FileNotFoundException {
+        var pw = new PrintWriter(textFile);
+/*
+        for (Product good : goods) {
+            pw.printf("%s@%.4f@%d\n", good.getName(), good.getPrice(), good.getInBasket());
+        }
+*/
+        Stream.of(goods).forEach(p ->
+                pw.printf("%s@%.4f@%d\n", p.getName(), p.getPrice(), p.getInBasket()));
+        pw.close();
     }
 
-    public static Basket loadFromBinFile(File file) throws IOException, ClassNotFoundException {
-        var fis = new FileInputStream(file);
-        var ois = new ObjectInputStream(fis);
-        return (Basket) ois.readObject();
+    public static Basket loadFromTxtFile(File textFile) throws FileNotFoundException, ParseException {
+        Scanner sc = new Scanner(textFile);
+        List<Product> goods = new ArrayList<>();
+        String name;
+        double price;
+        int inBasket;
+        NumberFormat nf = NumberFormat.getInstance();
+        while (sc.hasNext()) {
+            String[] d = sc.nextLine().split("@");
+            name = d[0];
+//            price = Double.parseDouble(d[1].replace(',', '.'));
+            price = nf.parse(d[1]).doubleValue();
+            inBasket = Integer.parseInt(d[2]);
+            goods.add(new Product(name, price, inBasket));
+        }
+        return new Basket(goods.toArray(Product[]::new));
     }
 }
