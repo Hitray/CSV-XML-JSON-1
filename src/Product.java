@@ -1,6 +1,4 @@
-import java.io.Serializable;
-
-public class Product implements Serializable {
+public class Product {
     private final String name;
     private final double price;
     private int inBasket = 0;
@@ -8,6 +6,11 @@ public class Product implements Serializable {
     public Product(String name, double price) {
         this.name = name;
         this.price = price;
+    }
+    public Product(String name, double price, int inBasket) {
+        this.name = name;
+        this.price = price;
+        this.inBasket = inBasket;
     }
 
     public String getName() {
